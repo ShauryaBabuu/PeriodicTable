@@ -1,0 +1,6 @@
+{
+  "name": "Interactive Periodic Table",
+  "description": "An interactive, visually stunning periodic table with advanced layout modes (Standard, Circular, Spiral, Wave, and 3D Sphere) using pure JavaScript and CSS glassmorphism.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

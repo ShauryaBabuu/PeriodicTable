@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Periodic Table of Elements</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Ambient background elements -->
+  <div class="bg-blur animate-blob1"></div>
+  <div class="bg-blur animate-blob2"></div>
+
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-logo">
+        <span class="logo-icon">Pt</span>
+        <div class="logo-text">
+          <h1>PERIODIC <span>SYSTEM</span></h1>
+          <p class="subtitle">Elementary Visualization v2.4</p>
+        </div>
+      </div>
+      
+      <!-- Stats Dashboard -->
+      <div class="header-stats">
+        <div class="stat-box">
+          <span class="stat-val" id="stat-count">118</span>
+          <span class="stat-lbl">Elements</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-val">4</span>
+          <span class="stat-lbl">Blocks (s, p, d, f)</span>
+        </div>
+        <div class="stat-box hidden-mobile">
+          <span class="stat-val" id="stat-active">Standard</span>
+          <span class="stat-lbl">Layout Mode</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Global Feature Tabs -->
+    <div class="global-tabs" style="display: flex; justify-content: center; gap: 1rem; margin: 0 auto 1.25rem auto; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; max-width: 90%; z-index: 10; position: relative;">
+      <button class="tab-btn active" id="tab-periodic-view" style="background: transparent; color: #fafafa; border: none; border-bottom: 2px solid #818cf8; padding: 0.5rem 1.25rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+        ⚛️ Periodic Table / आवर्त सारणी
+      </button>
+      <button class="tab-btn" id="tab-bonding-view" style="background: transparent; color: var(--text-secondary); border: none; border-bottom: 2px solid transparent; padding: 0.5rem 1.25rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+        🧪 Bonding Simulator / बंधन प्रयोगशाला
+      </button>
+    </div>
+
+    <!-- Interactive Control Bar -->
+    <section class="control-section glass">
+      <div class="control-row">
+        <!-- Search Controls -->
+        <div class="search-wrapper">
+          <span class="search-icon">&#x1F50D;</span>
+          <input type="text" id="search-input" placeholder="Search by name, symbol, or number (e.g., Gold, Au, 79)..." autocomplete="off">
+          <button id="search-clear" class="btn-clear" aria-label="Clear search" style="display: none;">&times;</button>
+        </div>
+
+        <!-- Layout Controls -->
+        <div class="layout-controls">
+          <span class="control-label">Layout:</span>
+          <div class="btn-group" id="layout-select-group">
+            <button class="btn-layout active" data-layout="standard">Standard</button>
+            <button class="btn-layout" data-layout="circular">Circular</button>
+            <button class="btn-layout" data-layout="spiral">Spiral</button>
+            <button class="btn-layout" data-layout="wave">Wave</button>
+            <button class="btn-layout" data-layout="sphere">3D Sphere</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-row secondary-controls">
+        <!-- Speed slider -->
+        <div class="slider-wrapper">
+          <span class="control-label">Transition Speed: <span id="speed-value">1.0s</span></span>
+          <input type="range" id="speed-slider" min="0.2" max="3" step="0.1" value="1.0">
+        </div>
+        
+        <!-- Controls Help/Reset -->
+        <div class="action-buttons">
+          <button id="btn-auto-rotate" class="btn-secondary" title="Toggle Auto-Rotation for 3D modes">
+            <span class="icon">&#x21BB;</span> Auto-Rotate
+          </button>
+          <button id="btn-reset" class="btn-danger">
+            <span class="icon">&#x21BA;</span> Reset Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Filter Row -->
+      <div class="category-filters-container">
+        <span class="control-label">Filter Category:</span>
+        <div class="category-scroll" id="category-filter-group">
+          <button class="filter-pill active" data-category="all" style="--cat-color: #ffffff">All</button>
+          <button class="filter-pill" data-category="reactive-nonmetal" style="--cat-color: var(--cat-reactive-nonmetal)">Reactive Nonmetals</button>
+          <button class="filter-pill" data-category="noble-gas" style="--cat-color: var(--cat-noble-gas)">Noble Gases</button>
+          <button class="filter-pill" data-category="alkali-metal" style="--cat-color: var(--cat-alkali-metal)">Alkali Metals</button>
+          <button class="filter-pill" data-category="alkaline-earth-metal" style="--cat-color: var(--cat-alkaline-earth-metal)">Alkaline Earth</button>
+          <button class="filter-pill" data-category="metalloid" style="--cat-color: var(--cat-metalloid)">Metalloids</button>
+          <button class="filter-pill" data-category="post-transition-metal" style="--cat-color: var(--cat-post-transition-metal)">Post-Transition</button>
+          <button class="filter-pill" data-category="transition-metal" style="--cat-color: var(--cat-transition-metal)">Transition Metals</button>
+          <button class="filter-pill" data-category="lanthanide" style="--cat-color: var(--cat-lanthanide)">Lanthanides</button>
+          <button class="filter-pill" data-category="actinide" style="--cat-color: var(--cat-actinide)">Actinides</button>
+          <button class="filter-pill" data-category="unknown" style="--cat-color: var(--cat-unknown)">Unknown</button>
+        </div>
+      </div>
+
+      <!-- Block Filter Row -->
+      <div class="category-filters-container" style="border-top: 1px solid var(--glass-border); padding-top: 0.75rem;">
+        <span class="control-label">Filter Block:</span>
+        <div class="category-scroll" id="block-filter-group">
+          <button class="filter-pill active" data-block="all" style="--cat-color: #ffffff">All Blocks</button>
+          <button class="filter-pill" data-block="s" style="--cat-color: #ef4444">s-Block</button>
+          <button class="filter-pill" data-block="p" style="--cat-color: #3b82f6">p-Block</button>
+          <button class="filter-pill" data-block="d" style="--cat-color: #a855f7">d-Block</button>
+          <button class="filter-pill" data-block="f" style="--cat-color: #ec4899">f-Block</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Table Viewport (3D Stage) -->
+    <div class="viewport-stage" id="viewport-stage">
+      <div class="stage-instructions animate-fade-in-out">
+        <span class="drag-icon">&#x21CC;</span> Drag to Rotate in 3D Mode
+      </div>
+      <div class="scene3d" id="scene3d">
+        <div class="table-container" id="table-container">
+          <!-- Element Cards injected dynamically via JS -->
+          
+          <!-- Lanthanide placeholder card -->
+          <div class="element-card placeholder-card" id="lanthanide-placeholder" style="grid-row: 6; grid-column: 3;">
+            <div class="placeholder-range">57-71 *</div>
+            <div class="placeholder-name">Lanthanides</div>
+          </div>
+          <!-- Actinide placeholder card -->
+          <div class="element-card placeholder-card" id="actinide-placeholder" style="grid-row: 7; grid-column: 3;">
+            <div class="placeholder-range">89-103 **</div>
+            <div class="placeholder-name">Actinides</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Info Banner -->
+    <div class="quick-status-bar glass">
+      <span class="status-node">&#x25CF; Active Elements: <strong id="status-visible-count">118</strong></span>
+      <span class="status-node hidden-mobile">&#x25CF; Drag state: <span id="drag-status">Static</span></span>
+      <span class="status-node">&#x25CF; Bohr Model: <span class="text-green text-glow">Interactive</span></span>
+    </div>
+
+    <!-- Chemical Bonding Simulator Section (Hidden by default) -->
+    <section class="bonding-section glass hidden" id="bonding-section" style="padding: 1.5rem; margin: 0.25rem auto 1.5rem auto; max-width: 95%; min-height: 500px; display: flex; flex-direction: column; gap: 1.25rem; background: rgba(10, 12, 30, 0.7); border: 1px solid var(--glass-border); border-radius: 12px; position: relative; z-index: 5;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Chemical Bonding Simulator (रासायनिक बंधन प्रयोगशाला)</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Create molecular bonds by adding elements to the vessel and running synthesis! / तत्वों को जोड़कर नए यौगिक तथा सहसंयोजी एवं आयनिक बंध बनाएं!</p>
+        </div>
+        <button class="btn-danger" id="bonding-reset-btn" style="padding: 0.45rem 1rem; font-size: 0.8rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+          🔄 Clear Vessel / खाली करें
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="bonding-grid">
+        <!-- Element Picker Panel -->
+        <div style="background: rgba(255,255,255,0.015); border: 1px solid var(--glass-border); border-radius: 10px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+          <h3 style="font-size: 0.85rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; border-left: 3px solid #818cf8; padding-left: 0.5rem; line-height: 1;">1. Select Elements / तत्वों का चयन करें</h3>
+          
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;" id="bonding-quick-add">
+            <button class="quick-add-item" data-sym="H" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #10b981;">H</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Hydrogen</span>
+            </button>
+            <button class="quick-add-item" data-sym="O" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #10b981;">O</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Oxygen</span>
+            </button>
+            <button class="quick-add-item" data-sym="C" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #3b82f6;">C</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Carbon</span>
+            </button>
+            <button class="quick-add-item" data-sym="N" style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #a855f7;">N</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Nitrogen</span>
+            </button>
+            <button class="quick-add-item" data-sym="Na" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #f59e0b;">Na</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Sodium</span>
+            </button>
+            <button class="quick-add-item" data-sym="Cl" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #10b981;">Cl</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Chlorine</span>
+            </button>
+            <button class="quick-add-item" data-sym="Mg" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #ef4444;">Mg</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Magnesium</span>
+            </button>
+            <button class="quick-add-item" data-sym="Ca" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; padding: 0.45rem; color: #fff; cursor: pointer; text-align: center; font-weight: bold; transition: all 0.15s; outline: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="display: block; font-size: 1.15rem; color: #ef4444;">Ca</span>
+              <span style="font-size: 0.6rem; font-weight: normal; color: var(--text-secondary); white-space: nowrap;">Calcium</span>
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem;">
+            <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.4rem; font-weight: 500;">Or Search & Add Any Other Element / या सूची से कोई अन्य चुनें:</label>
+            <select id="bonding-dropdown-add" style="width: 100%; padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--glass-border); background: #0f111a; color: #fff; outline: none; font-size: 0.8rem; cursor: pointer;"></select>
+          </div>
+
+          <!-- Vessel Container visual -->
+          <div style="flex: 1; border: 1.5px dashed rgba(129, 140, 248, 0.35); border-radius: 10px; background: rgba(5, 7, 20, 0.5); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 180px;">
+            <div style="font-size: 0.75rem; color: #818cf8; text-transform: uppercase; font-weight: 700; display: flex; justify-content: space-between; margin-bottom: 0.5rem; letter-spacing: 0.03em;">
+              <span>Reaction Vessel / अभिक्रिया पात्र</span>
+              <span id="vessel-count" style="font-family: monospace; font-weight: bold; color: #e5e7eb; background: rgba(129,140,248,0.2); padding: 0.1rem 0.4rem; border-radius: 4px;">0 Elements</span>
+            </div>
+            
+            <div id="vessel-atoms" style="display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; align-content: center; flex: 1; padding: 1rem; border: 1px solid rgba(255,255,255,0.02); border-radius: 6px; background: rgba(0,0,0,0.15);">
+              <span style="color: var(--text-secondary); font-size: 0.75rem;" id="vessel-empty-txt">Click quick add tags or choose from dropdown to fill this container! / तत्वों को यहाँ शामिल करने के लिए क्लिक करें...</span>
+            </div>
+
+            <button id="bonding-react-btn" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #818cf8); border: none; border-radius: 6px; padding: 0.7rem; color: #fff; font-weight: 800; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; margin-top: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;" class="text-glow">
+              ⚡ React Elements / रासायनिक उत्पाद बनाएँ
+            </button>
+          </div>
+        </div>
+
+        <!-- Chemical Reaction Outcome Display -->
+        <div style="background: rgba(255,255,255,0.015); border: 1px solid var(--glass-border); border-radius: 10px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;" id="bonding-result-panel">
+          <h3 style="font-size: 0.85rem; font-weight: 700; color: #ec4899; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; border-left: 3px solid #ec4899; padding-left: 0.5rem; line-height: 1;">2. Reaction Outcome / अभिक्रिया परिणाम</h3>
+          
+          <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: rgba(0,0,0,0.15); border-radius: 8px; padding: 2rem; border: 1px solid rgba(255,255,255,0.02);" id="bonding-result-placeholder">
+            <span style="font-size: 3rem; margin-bottom: 0.5rem; animation: float-slow 3s ease-in-out infinite;">🧪</span>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #fafafa;">Reaction Lab Standing By</h4>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); max-width: 320px; margin-top: 6px; line-height: 1.55;">Mix correct stoichiometric elements (e.g. <strong>2 Hydrgons (H) + 1 Oxygen (O)</strong> for Water, or <strong>1 Carbon (C) + 2 Oxygens (O)</strong> for Carbon Dioxide) to bind them!</p>
+          </div>
+
+          <div style="flex: 1; display: none; flex-direction: column; gap: 0.75rem;" id="bonding-result-details">
+            <!-- Main visual for compound molecule -->
+            <div style="display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;">
+              <span id="molecule-badge" style="font-size: 2.5rem; font-weight: 900; color: #10b981; letter-spacing: 0.05em;" class="text-glow">H₂O</span>
+              <h4 id="molecule-name" style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-top: 4px;">Water (पानी)</h4>
+              <span id="molecule-bond-type" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-size: 0.72rem; border-radius: 20px; padding: 0.2rem 0.65rem; margin-top: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;">Covalent Bond / सहसंयोजी बंध</span>
+            </div>
+
+            <!-- SVG 2D molecular visualizer -->
+            <div id="molecule-svg-container" style="height: 140px; width: 100%; display: flex; justify-content: center; align-items: center; background: rgba(5,6,15,0.45); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
+              <!-- SVG will be generated dynamically! -->
+            </div>
+
+            <!-- Compound explanation text -->
+            <div style="font-size: 0.78rem; line-height: 1.5; color: #cbd5e1; background: rgba(16, 185, 129, 0.04); border-radius: 8px; padding: 0.8rem 1rem; border-left: 4px solid #10b981; max-height: 130px; overflow-y: auto;" id="molecule-explanation-card">
+              Molecule data ...
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Glassmorphic Details Sidebar Panel (Slide-out) -->
+    <aside class="detail-sidebar glass" id="detail-sidebar">
+      <button class="btn-close-sidebar" id="close-sidebar" aria-label="Close panel">&times;</button>
+      
+      <!-- Panel Empty View -->
+      <div class="sidebar-empty-state" id="sidebar-empty">
+        <div class="pulse-icon">&#x269B;</div>
+        <h3>Atomic Intelligence</h3>
+        <p>Select any chemical element from the periodic table to run orbital simulations, retrieve historic discoverer data, investigate physical properties, and view thermodynamic thresholds.</p>
+      </div>
+
+      <!-- Panel Filled View -->
+      <div class="sidebar-content hidden" id="sidebar-content">
+        <div class="element-identity-header">
+          <div class="element-badge-large" id="sidebar-badge">
+            <span class="large-number" id="sidebar-num">1</span>
+            <span class="large-symbol" id="sidebar-sym">H</span>
+            <span class="large-mass" id="sidebar-mass">1.008</span>
+          </div>
+          <div class="element-name-block">
+            <h2 id="sidebar-name">Hydrogen</h2>
+            <h3 id="sidebar-name-hindi" style="font-size: 1.15rem; color: #a5b4fc; font-weight: 700; margin-top: 1px;">हाइड्रोजन</h3>
+            <span class="element-category-badge" id="sidebar-category">Reactive Nonmetal</span>
+            
+            <!-- Bilingual Pronunciation Player -->
+            <div style="display: flex; gap: 0.4rem; margin-top: 0.6rem;">
+              <button class="btn-pronounce" id="btn-speak-en" title="Listen in English" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 0.25rem 0.55rem; font-size: 0.72rem; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.15s; font-weight: 500;">
+                📢 English
+              </button>
+              <button class="btn-pronounce" id="btn-speak-hi" title="हिन्दी में सुनें" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 0.25rem 0.55rem; font-size: 0.72rem; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.15s; font-weight: 500;">
+                📢 हिन्दी
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Core Atomic Specs Display in English and Hindi -->
+        <div class="properties-deck" style="margin-bottom: 0.75rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="prop-card" style="border-left: 3px solid #3b82f6; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 0.5rem 0.65rem;">
+            <div style="font-size: 0.65rem; color: var(--text-secondary); line-height: 1.2;">
+              <span style="display: block; font-weight: 600; color: #fafafa; font-size: 0.72rem;">Atomic Number</span>
+              परमाणु संख्या
+            </div>
+            <span class="prop-value text-glow" id="sidebar-num-val" style="font-size: 1.25rem; font-weight: 800; color: #3b82f6; margin-top: 4px; align-self: flex-end;">1</span>
+          </div>
+          <div class="prop-card" style="border-left: 3px solid #a855f7; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 0.5rem 0.65rem;">
+            <div style="font-size: 0.65rem; color: var(--text-secondary); line-height: 1.2;">
+              <span style="display: block; font-weight: 600; color: #fafafa; font-size: 0.72rem;">Atomic Mass</span>
+              परमाणु द्रव्यमान
+            </div>
+            <span class="prop-value" id="sidebar-mass-val" style="font-size: 1.05rem; font-weight: 800; color: #a855f7; margin-top: 4px; align-self: flex-end;">1.008 u</span>
+          </div>
+          <div class="prop-card" style="border-left: 3px solid #10b981; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 0.5rem 0.65rem; grid-column: span 2;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+              <div style="font-size: 0.65rem; color: var(--text-secondary); line-height: 1.2;">
+                <span style="display: block; font-weight: 600; color: #10b981; font-size: 0.75rem;">Valency</span>
+                संयोजकता (Valency)
+              </div>
+              <span class="prop-value text-glow" id="sidebar-valency" style="font-size: 1.25rem; font-weight: 800; color: #10b981;">1</span>
+            </div>
+          </div>
+          <div class="prop-card" style="border-left: 3px solid #f59e0b; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 0.5rem 0.65rem; grid-column: span 2;">
+            <div style="font-size: 0.65rem; color: var(--text-secondary); line-height: 1.2; width: 100%;">
+              <span style="display: block; font-weight: 600; color: #fafafa; font-size: 0.72rem;">Common Uses / प्रमुख उपयोग</span>
+              <p id="sidebar-uses" style="font-size: 0.8rem; font-weight: 500; color: #f59e0b; margin-top: 4px; line-height: 1.4;">Rocket fuel, power plants, manufacturing</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Bohr Model Orbital Simulation -->
+        <div class="bohr-simulation-card glass">
+          <div class="simulation-title">
+            <span>&#x269B; Bohr Model Simulation</span>
+            <span id="bohr-shell-text" class="text-glow">Shells: 1</span>
+          </div>
+          <div class="bohr-canvas-container">
+            <svg id="bohr-svg" viewBox="0 0 200 200" width="100%" height="100%">
+              <!-- Generated dynamically by script.js -->
+            </svg>
+          </div>
+          <div class="bohr-notes">
+            Electrons revolve in discrete energy levels (shells).
+          </div>
+        </div>
+
+        <!-- Analytical Chemical Properties Grid -->
+        <div class="properties-deck">
+          <div class="prop-card flex-between">
+            <span class="prop-label">State of Matter</span>
+            <span class="prop-value" id="sidebar-state"><span class="state-icon">&#x2614;</span> Gas</span>
+          </div>
+          <div class="prop-card flex-between">
+            <span class="prop-label">Electron Config</span>
+            <span class="prop-value font-mono text-glow" id="sidebar-config">1s1</span>
+          </div>
+          <div class="prop-card flex-between">
+            <span class="prop-label">Melting Point</span>
+            <span class="prop-value" id="sidebar-melt">14.01 K</span>
+          </div>
+          <div class="prop-card flex-between">
+            <span class="prop-label">Boiling Point</span>
+            <span class="prop-value" id="sidebar-boil">20.28 K</span>
+          </div>
+          <div class="prop-card flex-between">
+            <span class="prop-label">Density</span>
+            <span class="prop-value" id="sidebar-density">0.00008988 g/cm³</span>
+          </div>
+          <div class="prop-card flex-between">
+            <span class="prop-label">Discovery Year</span>
+            <span class="prop-value" id="sidebar-discovered">1766</span>
+          </div>
+        </div>
+
+        <!-- Historic Bio Profile -->
+        <div class="discoverer-highlight glass">
+          <div class="desc-header">
+            <span class="desc-icon">&#x1F4D6;</span>
+            <h4>Historical Profile</h4>
+          </div>
+          <p id="sidebar-history-desc">Discovered in <strong>1766</strong> by <strong>Henry Cavendish</strong>. Hydrogen is the chemical element with the symbol H and atomic number 1, and is the most abundant chemical substance in the universe.</p>
+        </div>
+
+        <!-- AI Intelligence Assistant Chat Box -->
+        <div class="ai-box glass" style="margin-top: 1rem; border: 1px solid rgba(129, 140, 248, 0.25); border-radius: 8px; padding: 0.75rem; background: rgba(9, 11, 28, 0.65);">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+            <span style="font-size: 1rem; color: #818cf8;">✨</span>
+            <h4 style="font-size: 0.8rem; font-weight: 700; color: #818cf8; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">Element AI Chatbot (तत्व एआई चैटबॉट्स)</h4>
+          </div>
+          <div class="ai-chat-messages" id="ai-messages" style="max-height: 120px; overflow-y: auto; font-size: 0.75rem; line-height: 1.4; color: #cbd5e1; margin-bottom: 0.5rem; border-radius: 4px; background: rgba(0,0,0,0.25); padding: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem;">
+            <div class="ai-msg bot" style="background: rgba(129, 140, 248, 0.1); padding: 0.4rem 0.5rem; border-radius: 4px; border-left: 2px solid #818cf8;">
+              पूछें मुझसे <strong id="ai-element-ref">Hydrogen</strong> के बारे में! Ask me anything about this element.
+            </div>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <input type="text" id="ai-input" placeholder="Type a question... (उदा. यह क्या काम आता है?)" style="flex: 1; padding: 0.35rem 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #fff; font-size: 0.75rem; outline: none;" autocomplete="off">
+            <button id="ai-send-btn" style="background: #4f46e5; border: none; border-radius: 4px; padding: 0.35rem 0.6rem; color: #fff; cursor: pointer; transition: background 0.2s; font-size: 0.75rem;">Send</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script type="module" src="/script.js"></script>
+</body>
+</html>
